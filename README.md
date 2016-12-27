@@ -10,7 +10,6 @@ More information can be found on the [HdrHistogram site](http://hdrhistogram.org
 ### Prerequisites
 * C compiler (GCC 4.7+, Visual Studio 2013, MinGW (Lua 5.1))
 * Lua 5.1, Lua 5.2, Lua 5.3, or LuaJIT
-* [CMake (2.8.7+)](http://cmake.org/cmake/resources/software.html)
 
 ### Luarocks
 ```sh
