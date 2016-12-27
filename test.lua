@@ -1,4 +1,4 @@
-require "hdrhistogram"
+local hdrhistogram = require "hdrhistogram"
 require "string"
 
 local hdr = hdrhistogram.new(1,1000000,3)
