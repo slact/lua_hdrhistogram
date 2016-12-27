@@ -9,8 +9,13 @@ More information can be found on the [HdrHistogram site](http://hdrhistogram.org
 
 ### Prerequisites
 * C compiler (GCC 4.7+, Visual Studio 2013, MinGW (Lua 5.1))
-* Lua 5.1, Lua 5.2, or LuaJIT
+* Lua 5.1, Lua 5.2, Lua 5.3, or LuaJIT
 * [CMake (2.8.7+)](http://cmake.org/cmake/resources/software.html)
+
+### Luarocks
+```sh
+  luarocks install hdrhistogram
+```
 
 ### CMake Build Instructions
     git clone https://github.com/hynd/lua_hdrhistogram.git
@@ -26,7 +31,7 @@ More information can be found on the [HdrHistogram site](http://hdrhistogram.org
 
 ### Example Usage
 ```lua
-require "hdrhistogram"
+local hdrhistogram = require "hdrhistogram"
 local hdr = hdrhistogram.new(1,1000000,3)
 
 for i = 10, 1000000, 10 do
@@ -41,14 +46,14 @@ local p50 = hdr:percentile(50)
 
 #### new
 ```lua
-require "hdrhistogram"
+local hdrhistogram = require "hdrhistogram"
 local hdr = hdrhistogram.new(1,3600000000,3)
 ```
 
-Import Lua _hdrhistogram_ via the Lua 'require' function. The module is
-globally registered and returned by the require function. The _new_ function
-takes 3 arguments for lowest trackable value, highest trackable value and
-the value precision represented as significant figures.
+Import Lua _hdrhistogram_ via the Lua 'require' function. The module is 
+returned by the require function, and is _not_ globally registered. 
+The _new_ function takes 3 arguments for lowest trackable value, highest 
+trackable value and the value precision represented as significant figures.
 
 The example above configures a new histogram to track the counts of observed
 integer values between 1 and 3,600,000,000 while maintaining a value precision
@@ -63,7 +68,7 @@ still maintain a resolution of 3.6 seconds (or better).
 
 #### version
 ```lua
-require "hdrhistogram"
+local hdrhistogram = require "hdrhistogram"
 local v = hdrhistogram.version()
 -- v == "0.1.0"
 ```

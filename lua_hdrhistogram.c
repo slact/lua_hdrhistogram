@@ -232,16 +232,12 @@ int luaopen_hdrhistogram(lua_State* lua)
   lua_pushvalue(lua, -1);
   lua_setfield(lua, -2, "__index");
 
-#if LUA_VERSION_NUM > 501
   luaL_setfuncs(lua, lhdr_methods, 0);
   
   lua_newtable(lua);
   luaL_setfuncs(lua, lhdr_functions, 0);
-  lua_pushvalue(lua,-1);        // pluck these lines out if they offend you
-  lua_setglobal(lua,"hdrhistogram"); // for they clobber the Holy _G
-#else
-  luaL_register(lua, NULL, lhdr_methods);
-  luaL_register(lua, "hdrhistogram", lhdr_functions);
-#endif  
+  //lua_pushvalue(lua,-1);        // pluck these lines out if they offend you
+  //lua_setglobal(lua,"hdrhistogram"); // for they clobber the Holy _G
+
   return 1;
 }
