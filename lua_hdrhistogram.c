@@ -29,7 +29,7 @@ static int lhdr_new(lua_State* lua)
 
   int64_t lowest_trackable_value = luaL_checknumber(lua, 1);
   int64_t highest_trackable_value = luaL_checknumber(lua, 2);
-  int significant_figures = luaL_checkint(lua, 3);
+  lua_Integer significant_figures = luaL_checkinteger(lua, 3);
   luaL_argcheck(lua, lowest_trackable_value >= 1,
                 1, "lowest trackable value must be >= 1");
   luaL_argcheck(lua, highest_trackable_value > lowest_trackable_value * 2,

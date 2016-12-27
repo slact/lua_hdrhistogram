@@ -3,7 +3,7 @@ package = "hdrhistogram"
 version = "0.1.0-1"
 source = {
   url="git://github.com/slact/lua_hdrhistogram",
-  tag="0.1.0"
+  tag="v0.1.0"
 }
 description = {
   summary = "Lua library wrapping HdrHistogram_c ",
