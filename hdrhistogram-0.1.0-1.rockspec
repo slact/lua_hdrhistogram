@@ -19,9 +19,10 @@ dependencies = {
 build = {
   type = "builtin",
   modules = {
-    hdrhistogram = {
+    ["hdrhistogram.hdr"] = {
       sources = {"hdr_histogram.c", "lua_hdrhistogram.c"},
       defines = {("DIST_VERSION=\"%s\""):format(_version)}
-    }
+    },
+    hdrhistogram = "hdrhistogram.lua"
   }
 }
