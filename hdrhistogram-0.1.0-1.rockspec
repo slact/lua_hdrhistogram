@@ -1,10 +1,10 @@
 #!/bin/lua
 package = "hdrhistogram"
-local _version = "0.1.0"
+local _version = "0.1.1"
 version = _version .. "-1"
 source = {
   url="git://github.com/slact/lua_hdrhistogram",
-  tag="v0.1.0"
+  tag="v".._version
 }
 description = {
   summary = "Lua library wrapping HdrHistogram_c ",
