@@ -226,7 +226,7 @@ static const struct luaL_Reg lhdr_methods[] = {
 };
 
 
-int luaopen_hdrhistogram(lua_State* lua)
+int luaopen_hdrhistogram_hdr(lua_State* lua)
 {
   luaL_newmetatable(lua, LHDR);
   lua_pushvalue(lua, -1);
