@@ -202,6 +202,44 @@ static int lhdr_tostring(lua_State* lua)
   return 1;
 }
 
+#define add_hdr_property_to_table(lua, hdr, propname) \
+  lua_pushnumber(lua, hdr->propname);                 \
+  lua_setfield(lua, -2, #propname);
+
+static int lhdr_serialize(lua_State *lua) {
+  struct hdr_histogram* hdr = check_hdrhistogram(lua, 1);
+  
+  lua_newtable(lua);
+  
+  add_hdr_property_to_table(lua, hdr, lowest_trackable_value)
+  add_hdr_property_to_table(lua, hdr, highest_trackable_value)
+  add_hdr_property_to_table(lua, hdr, unit_magnitude);
+  add_hdr_property_to_table(lua, hdr, significant_figures);
+  add_hdr_property_to_table(lua, hdr, sub_bucket_half_count_magnitude);
+  add_hdr_property_to_table(lua, hdr, sub_bucket_half_count);
+  add_hdr_property_to_table(lua, hdr, sub_bucket_mask);
+  add_hdr_property_to_table(lua, hdr, sub_bucket_count);
+  add_hdr_property_to_table(lua, hdr, bucket_count);
+  add_hdr_property_to_table(lua, hdr, min_value);
+  add_hdr_property_to_table(lua, hdr, max_value);
+  add_hdr_property_to_table(lua, hdr, normalizing_index_offset);
+  add_hdr_property_to_table(lua, hdr, conversion_ratio);
+  add_hdr_property_to_table(lua, hdr, counts_len);
+  add_hdr_property_to_table(lua, hdr, total_count);
+  
+  
+  lua_newtable(lua);
+  
+  int i;
+  for(i = 0; i<hdr->counts_len; i++) {
+    lua_pushinteger(lua, hdr->counts[i]);
+    lua_rawseti(lua, -2, i+1);
+  }
+  
+  lua_setfield(lua, -2, "counts");
+  
+  return 1;
+}
 
 static const struct luaL_Reg lhdr_functions[] = {
   { "new", lhdr_new },
@@ -221,6 +259,7 @@ static const struct luaL_Reg lhdr_methods[] = {
   { "stddev", lhdr_stddev },
   { "percentile", lhdr_percentile },
   { "merge", lhdr_merge },
+  { "serialize", lhdr_serialize },
   { "__tostring", lhdr_tostring },
   { NULL, NULL },
 };
