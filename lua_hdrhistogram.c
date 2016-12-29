@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdio.h>
+#include <assert.h>
+
 #include <lua.h>
 #include <lauxlib.h>
 
@@ -241,9 +244,66 @@ static int lhdr_serialize(lua_State *lua) {
   return 1;
 }
 
+#define unserialize_hdr_int_property(lua, hdr, propname, type) \
+  lua_getfield(lua, 1, #propname)           ;                \
+  hdr->propname = (type )lua_tonumber(lua, -1);               \
+  lua_pop(lua, 1);                                            
+
+#define unserialize_hdr_float_property(lua, hdr, propname, type) \
+  lua_getfield(lua, 1, #propname)           ;                   \
+  hdr->propname = (type )lua_tonumber(lua, -1);                  \
+  lua_pop(lua, 1);                                           
+
+static int lhdr_unserialize(lua_State *lua) {
+  struct hdr_histogram*  hdr;
+  lua_Integer            counts_len;
+  size_t                 histogram_size;
+  int                    i;
+  
+  assert(lua_istable(lua, 1));
+  lua_getfield(lua, 1, "counts_len");
+  counts_len = lua_tointeger(lua, -1);
+  
+  assert(lua_istable(lua, 1));
+  
+  histogram_size = sizeof(struct hdr_histogram) + counts_len * sizeof(int64_t);
+  hdr = lua_newuserdata(lua, histogram_size);
+  
+  unserialize_hdr_int_property(lua, hdr, lowest_trackable_value, int64_t);
+  unserialize_hdr_int_property(lua, hdr, highest_trackable_value, int64_t);
+  unserialize_hdr_int_property(lua, hdr, unit_magnitude, int32_t);
+  unserialize_hdr_int_property(lua, hdr, significant_figures, int64_t);
+  unserialize_hdr_int_property(lua, hdr, sub_bucket_half_count_magnitude, int32_t);
+  unserialize_hdr_int_property(lua, hdr, sub_bucket_half_count, int32_t);
+  unserialize_hdr_int_property(lua, hdr, sub_bucket_mask, int64_t);
+  unserialize_hdr_int_property(lua, hdr, sub_bucket_count, int32_t);
+  unserialize_hdr_int_property(lua, hdr, bucket_count, int32_t);
+  unserialize_hdr_int_property(lua, hdr, min_value, int64_t);
+  unserialize_hdr_int_property(lua, hdr, max_value, int64_t);
+  unserialize_hdr_int_property(lua, hdr, normalizing_index_offset, int32_t);
+  unserialize_hdr_float_property(lua, hdr, conversion_ratio, double);
+  hdr->counts_len = (int32_t )counts_len;
+  unserialize_hdr_int_property(lua, hdr, total_count, int64_t);
+  
+  lua_getfield(lua, 1, "counts");
+  for(i=0; i<counts_len; i++) {
+    lua_rawgeti(lua, -1, i+1);
+    hdr->counts[i]=(int64_t )lua_tointeger(lua, -1);
+    lua_pop(lua, 1);
+  }
+  lua_pop(lua, 1);
+  
+  luaL_getmetatable(lua, LHDR);
+  lua_setmetatable(lua, -2);
+  
+  return 1;
+}
+
+
 static const struct luaL_Reg lhdr_functions[] = {
   { "new", lhdr_new },
   { "version", lhdr_version },
+  { "unserialize", lhdr_unserialize },
   { NULL, NULL }
 };
 

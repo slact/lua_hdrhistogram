@@ -1,6 +1,6 @@
 #!/bin/lua
 package = "hdrhistogram"
-local _version = "0.1.1"
+local _version = "0.1.2"
 version = _version .. "-1"
 source = {
   url="git://github.com/slact/lua_hdrhistogram",
@@ -21,7 +21,8 @@ build = {
   modules = {
     ["hdrhistogram.hdr"] = {
       sources = {"hdr_histogram.c", "lua_hdrhistogram.c"},
-      defines = {("DIST_VERSION=\"%s\""):format(_version)}
+      defines = {("DIST_VERSION=\"%s\""):format(_version)},
+      variables={CFLAGS="-ggdb"}
     },
     hdrhistogram = "hdrhistogram.lua"
   }
