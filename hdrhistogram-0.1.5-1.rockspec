@@ -1,6 +1,6 @@
 #!/bin/lua
 package = "hdrhistogram"
-local _version = "0.1.4"
+local _version = "0.1.5"
 version = _version .. "-1"
 source = {
   url="git://github.com/slact/lua_hdrhistogram",
