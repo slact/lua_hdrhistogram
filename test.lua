@@ -33,12 +33,13 @@ local hdrcopy = hdrhistogram.unserialize(ser)
 
 assert(hdr:stats() == hdrcopy:stats())
 assert(tostring(hdr) == tostring(hdrcopy))
-
+assert(ser == hdrcopy:serialize())
 
 local hdr2 = hdrhistogram.new(1,1000000,3, {multiplier=multiplier/10, unit="ms"})
 
 local ok, ret = pcall(hdr.merge, hdr, hdr2)
 assert(not ok)
+
 
 local hdr3 = hdrhistogram.new(1,1000000,3, {multiplier=multiplier, unit="mm"})
 local ok, ret = pcall(hdr.merge, hdr, hdr3)

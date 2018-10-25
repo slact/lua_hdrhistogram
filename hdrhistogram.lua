@@ -45,16 +45,121 @@ for i, v in ipairs({"min", "max", "mean", "stddev", "percentile"}) do
   end
 end
 
+local numrun = "~!@#$%^&*"
+local rnumrun = {}
+for i=1,#numrun do
+  rnumrun[string.char(numrun:byte(i))]=i-1
+end
+
 local serialize = hdrmeta.serialize
 function hdrmeta:serialize()
-  local ret = serialize(self)
-  ret["_multiplier"]=data[self].multiplier
-  ret["_unit"]=data[self].unit
-  return ret
+  local raw_serialized = serialize(self)
+  local raw_counts = raw_serialized.counts
+  local counts = {}
+  local num
+  
+  local i, j = 1, 1
+  while i <= #raw_counts do
+    local n = 1
+    num, j = raw_counts[i],  i
+    if num < #numrun then
+      while raw_counts[j+1] == num do
+        n, j = n+1, j+1
+      end
+      if n > 1 then
+        table.insert(counts, ("%c%d"):format(numrun:byte(num+1), n))
+      else
+        table.insert(counts, num)
+      end
+    else
+      table.insert(counts, num)
+    end
+    i=j+1
+  end
+  
+  local vars = ("%d %d %d %d %d %d %d %d %d %d %d %d %f %d %d"):format(
+    raw_serialized.lowest_trackable_value,
+    raw_serialized.highest_trackable_value,
+    raw_serialized.unit_magnitude,
+    raw_serialized.significant_figures,
+    raw_serialized.sub_bucket_half_count_magnitude,
+    raw_serialized.sub_bucket_half_count,
+    raw_serialized.sub_bucket_mask,
+    raw_serialized.sub_bucket_count,
+    raw_serialized.bucket_count,
+    raw_serialized.min_value,
+    raw_serialized.max_value,
+    raw_serialized.normalizing_index_offset,
+    raw_serialized.conversion_ratio,
+    raw_serialized.counts_len,
+    raw_serialized.total_count
+  )
+  
+  if data[self].multiplier ~= 1 or data[self].unit then
+    return ("%s [%s ] (%s %s)"):format(vars, table.concat(counts, " "), data[self].unit, tostring(data[self].multiplier))
+  else
+    return ("%s [%s ]"):format(vars, table.concat(counts, " "))
+  end
 end
 
 local unserialize = hdr.unserialize
-function hdr.unserialize(tbl)
+function hdr.unserialize(str)
+  
+  local m = {str:match("^(%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%S+) (%d+) (%d+) %[(.+)%] ?(.*)")}
+  if not m then
+    error("invalid HDRHistogram serialization format")
+  end
+  local tbl = {
+    lowest_trackable_value =            tonumber(m[1]),
+    highest_trackable_value =           tonumber(m[2]),
+    unit_magnitude =                    tonumber(m[3]),
+    significant_figures =               tonumber(m[4]),
+    sub_bucket_half_count_magnitude =   tonumber(m[5]),
+    sub_bucket_half_count =             tonumber(m[6]),
+    sub_bucket_mask =                   tonumber(m[7]),
+    sub_bucket_count =                  tonumber(m[8]),
+    bucket_count =                      tonumber(m[9]),
+    min_value =                         tonumber(m[10]),
+    max_value =                         tonumber(m[11]),
+    normalizing_index_offset =          tonumber(m[12]),
+    conversion_ratio =                  tonumber(m[13]),
+    counts_len =                        tonumber(m[14]),
+    total_count =                       tonumber(m[15]),
+  }
+  
+  local counts = {}
+  local pre, num, n
+  for token in string.gmatch(m[16], "[^%s]+") do
+    pre, num = token:match("^(%D?)(%d+)")
+    if not num then
+      error("invalid HDRHistogram serialization format")
+    end
+    num = tonumber(num)
+    if pre and #pre > 0 then
+      n, num = num, rnumrun[pre]
+      if not n then
+        error("invalid HDRHistogram serialization format")
+      end
+      for i=1, n do
+        table.insert(counts, num)
+      end
+    else
+      table.insert(counts, num)
+    end
+  end
+  
+  tbl.counts = counts
+  
+  if m[17] and #m[17] > 0 then
+    local unit, multiplier = m[17]:match("%((.+) (.+)%)")
+    tbl._unit = unit
+    multiplier = tonumber(multiplier)
+    if not multiplier or multipler == 0 then
+      error("invalid HDRHistogram serialization format")
+    end
+    tbl._multiplier = multiplier
+  end
+  
   local new_hdr = unserialize(tbl)
   data[new_hdr]={
     multiplier= tbl._multiplier or 1,
@@ -87,7 +192,7 @@ end
 function hdrmeta:latency_stats()
   local out = {
     "# Latency stats",
-    self:stats { 50, 75, 90, 95, 99, 99.9, 100 }
+    self:stats { 50, 75, 90, 95, 99, 99.9, 99.999 }
   }
   return table.concat(out, "\n")
 end
