@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <inttypes.h>
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -214,30 +215,31 @@ static int lhdr_tostring(lua_State* lua)
   return 1;
 }
 
-#define add_hdr_property_to_table(lua, hdr, propname) \
-  lua_pushnumber(lua, hdr->propname);                 \
-  lua_setfield(lua, -2, #propname);
+#define add_hdr_property_to_table(lua, buf, hdr, propname, printftype) \
+  sprintf(buf, "%" printftype, hdr->propname);        \
+  lua_pushstring(lua, buf);                           \
+  lua_setfield(lua, -2, #propname)
 
 static int lhdr_serialize(lua_State *lua) {
   struct hdr_histogram* hdr = check_hdrhistogram(lua, 1);
+  char   buf[256];
   
   lua_newtable(lua);
-  
-  add_hdr_property_to_table(lua, hdr, lowest_trackable_value)
-  add_hdr_property_to_table(lua, hdr, highest_trackable_value)
-  add_hdr_property_to_table(lua, hdr, unit_magnitude);
-  add_hdr_property_to_table(lua, hdr, significant_figures);
-  add_hdr_property_to_table(lua, hdr, sub_bucket_half_count_magnitude);
-  add_hdr_property_to_table(lua, hdr, sub_bucket_half_count);
-  add_hdr_property_to_table(lua, hdr, sub_bucket_mask);
-  add_hdr_property_to_table(lua, hdr, sub_bucket_count);
-  add_hdr_property_to_table(lua, hdr, bucket_count);
-  add_hdr_property_to_table(lua, hdr, min_value);
-  add_hdr_property_to_table(lua, hdr, max_value);
-  add_hdr_property_to_table(lua, hdr, normalizing_index_offset);
-  add_hdr_property_to_table(lua, hdr, conversion_ratio);
-  add_hdr_property_to_table(lua, hdr, counts_len);
-  add_hdr_property_to_table(lua, hdr, total_count);
+  add_hdr_property_to_table(lua, buf, hdr, lowest_trackable_value, PRId64);
+  add_hdr_property_to_table(lua, buf, hdr, highest_trackable_value, PRId64);
+  add_hdr_property_to_table(lua, buf, hdr, unit_magnitude, PRId32);
+  add_hdr_property_to_table(lua, buf, hdr, significant_figures, PRId64);
+  add_hdr_property_to_table(lua, buf, hdr, sub_bucket_half_count_magnitude, PRId32);
+  add_hdr_property_to_table(lua, buf, hdr, sub_bucket_half_count, PRId32);
+  add_hdr_property_to_table(lua, buf, hdr, sub_bucket_mask, PRId64);
+  add_hdr_property_to_table(lua, buf, hdr, sub_bucket_count, PRId32);
+  add_hdr_property_to_table(lua, buf, hdr, bucket_count, PRId32);
+  add_hdr_property_to_table(lua, buf, hdr, min_value, PRId64);
+  add_hdr_property_to_table(lua, buf, hdr, max_value, PRId64);
+  add_hdr_property_to_table(lua, buf, hdr, normalizing_index_offset, PRId32);
+  add_hdr_property_to_table(lua, buf, hdr, conversion_ratio, "f");
+  add_hdr_property_to_table(lua, buf, hdr, counts_len, PRId32);
+  add_hdr_property_to_table(lua, buf, hdr, total_count, PRId64);
   
   
   lua_newtable(lua);
