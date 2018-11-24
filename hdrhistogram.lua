@@ -95,7 +95,7 @@ function hdrmeta:serialize()
     raw_serialized.total_count
   )
   
-  if data[self].multiplier ~= 1 or data[self].unit then
+  if data[self].multiplier ~= 1 or (data[self].unit and #data[self].unit>0) then
     return ("%s [%s ] (%s %s)"):format(vars, table.concat(counts, " "), data[self].unit, tostring(data[self].multiplier))
   else
     return ("%s [%s ]"):format(vars, table.concat(counts, " "))
@@ -151,7 +151,7 @@ function hdr.unserialize(str)
   tbl.counts = counts
   
   if m[17] and #m[17] > 0 then
-    local unit, multiplier = m[17]:match("%((.+) (.+)%)")
+    local unit, multiplier = m[17]:match("^%((.*) (.*)%)$")
     tbl._unit = unit
     multiplier = tonumber(multiplier)
     if not multiplier or multipler == 0 then
